@@ -6,7 +6,9 @@ module NoUsingTestValuesInSource exposing (rule)
 
 -}
 
-import Review.Rule as Rule exposing (Rule)
+import Elm.Syntax.Expression exposing (Expression)
+import Elm.Syntax.Node exposing (Node)
+import Review.Rule as Rule exposing (Error, Rule)
 
 
 {-| Reports... REPLACEME
@@ -46,5 +48,14 @@ elm-review --template jfmengels/elm-review-test-values/example --rules NoUsingTe
 rule : Rule
 rule =
     Rule.newModuleRuleSchema "NoUsingTestValuesInSource" ()
-        -- Add your visitors
+        |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
+
+
+type alias Context =
+    ()
+
+
+expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
+expressionVisitor node context =
+    ( [], context )
