@@ -6,8 +6,8 @@ module NoUsingTestValuesInSource exposing (rule)
 
 -}
 
-import Elm.Syntax.Expression exposing (Expression)
-import Elm.Syntax.Node exposing (Node)
+import Elm.Syntax.Expression as Expression exposing (Expression)
+import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -58,4 +58,20 @@ type alias Context =
 
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
 expressionVisitor node context =
-    ( [], context )
+    case Node.value node of
+        Expression.FunctionOrValue _ name ->
+            if String.endsWith "_TESTS_ONLY" name then
+                ( [ Rule.error
+                        { message = "REPLACEME"
+                        , details = [ "REPLACEME" ]
+                        }
+                        (Node.range node)
+                  ]
+                , context
+                )
+
+            else
+                ( [], context )
+
+        _ ->
+            ( [], context )
