@@ -23,4 +23,12 @@ value = List.map foo list_TESTS_ONLY
                             }
                             |> Review.Test.atExactly { start = { row = 3, column = 22 }, end = { row = 3, column = 37 } }
                         ]
+        , test "should not report an error when using a function or value that does not end with the specified suffix" <|
+            \() ->
+                """module A exposing (..)
+list = []
+value = List.map foo list
+"""
+                    |> Review.Test.run rule
+                    |> Review.Test.expectNoErrors
         ]
