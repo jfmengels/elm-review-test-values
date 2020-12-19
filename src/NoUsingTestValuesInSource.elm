@@ -1,6 +1,6 @@
 module NoUsingTestValuesInSource exposing
     ( rule
-    , Configuration, endsWith
+    , Configuration, endsWith, startsWith
     )
 
 {-|
@@ -64,11 +64,17 @@ rule configuration =
 
 type Configuration
     = EndsWith String
+    | StartsWith String
 
 
 endsWith : String -> Configuration
 endsWith =
     EndsWith
+
+
+startsWith : String -> Configuration
+startsWith =
+    StartsWith
 
 
 type alias Context =
@@ -84,6 +90,9 @@ buildTestValuePredicate configuration =
     case configuration of
         EndsWith string ->
             String.endsWith string
+
+        StartsWith string ->
+            String.startsWith string
 
 
 
