@@ -14,7 +14,7 @@ all =
 list_TESTS_ONLY = []
 value = List.map foo list_TESTS_ONLY
 """
-                    |> Review.Test.run rule
+                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY"))
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = "REPLACEME"
@@ -29,7 +29,7 @@ value = List.map foo list_TESTS_ONLY
 list = []
 value = List.map foo list
 """
-                    |> Review.Test.run rule
+                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY"))
                     |> Review.Test.expectNoErrors
         , test "should not report an error when using a test value inside another test value" <|
             \() ->
@@ -37,6 +37,6 @@ value = List.map foo list
 list_TESTS_ONLY = []
 value_TESTS_ONLY = List.map foo list_TESTS_ONLY
 """
-                    |> Review.Test.run rule
+                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY"))
                     |> Review.Test.expectNoErrors
         ]

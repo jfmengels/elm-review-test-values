@@ -1,4 +1,7 @@
-module NoUsingTestValuesInSource exposing (rule)
+module NoUsingTestValuesInSource exposing
+    ( rule
+    , Configuration, endsWith
+    )
 
 {-|
 
@@ -46,20 +49,49 @@ elm-review --template jfmengels/elm-review-test-values/example --rules NoUsingTe
 ```
 
 -}
-rule : Rule
-rule =
+rule : Configuration -> Rule
+rule configuration =
+    let
+        isTestValue : String -> Bool
+        isTestValue =
+            buildTestValuePredicate configuration
+    in
     Rule.newModuleRuleSchema "NoUsingTestValuesInSource" False
-        |> Rule.withDeclarationEnterVisitor declarationVisitor
-        |> Rule.withExpressionEnterVisitor expressionVisitor
+        |> Rule.withDeclarationEnterVisitor (declarationVisitor isTestValue)
+        |> Rule.withExpressionEnterVisitor (expressionVisitor isTestValue)
         |> Rule.fromModuleRuleSchema
+
+
+type Configuration
+    = EndsWith String
+
+
+endsWith : String -> Configuration
+endsWith =
+    EndsWith
 
 
 type alias Context =
     Bool
 
 
-declarationVisitor : Node Declaration -> Context -> ( List (Error {}), Context )
-declarationVisitor node _ =
+
+-- CONFIGURATION
+
+
+buildTestValuePredicate : Configuration -> String -> Bool
+buildTestValuePredicate configuration =
+    case configuration of
+        EndsWith string ->
+            String.endsWith string
+
+
+
+-- VISITORS
+
+
+declarationVisitor : (String -> Bool) -> Node Declaration -> Context -> ( List (Error {}), Context )
+declarationVisitor isTestValue node _ =
     case Node.value node of
         Declaration.FunctionDeclaration function ->
             let
@@ -70,18 +102,18 @@ declarationVisitor node _ =
                         |> .name
                         |> Node.value
             in
-            ( [], not (String.endsWith "_TESTS_ONLY" functionName) )
+            ( [], not (isTestValue functionName) )
 
         _ ->
             ( [], False )
 
 
-expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor node inDeclarationOfNonTestValue =
+expressionVisitor : (String -> Bool) -> Node Expression -> Context -> ( List (Error {}), Context )
+expressionVisitor isTestValue node inDeclarationOfNonTestValue =
     if inDeclarationOfNonTestValue then
         case Node.value node of
             Expression.FunctionOrValue _ name ->
-                if String.endsWith "_TESTS_ONLY" name then
+                if isTestValue name then
                     ( [ Rule.error
                             { message = "REPLACEME"
                             , details = [ "REPLACEME" ]
