@@ -8,17 +8,19 @@ import Test exposing (Test, describe, test)
 all : Test
 all =
     describe "NoUsingTestValuesInSource"
-        [ test "should report an error when REPLACEME" <|
+        [ test "should report an error when using a function or value that ends with the specified suffix" <|
             \() ->
                 """module A exposing (..)
-a = 1
+list_TESTS_ONLY = []
+value = List.map foo list_TESTS_ONLY
 """
                     |> Review.Test.run rule
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = "REPLACEME"
                             , details = [ "REPLACEME" ]
-                            , under = "REPLACEME"
+                            , under = "list_TESTS_ONLY"
                             }
+                            |> Review.Test.atExactly { start = { row = 3, column = 22 }, end = { row = 3, column = 37 } }
                         ]
         ]
