@@ -25,8 +25,11 @@ value = List.map foo listTESTS_ONLY
                     |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "TESTS_ONLY"))
                     |> Review.Test.expectErrors
                         [ Review.Test.error
-                            { message = "REPLACEME"
-                            , details = [ "REPLACEME" ]
+                            { message = "Forbidden use of test-only value `listTESTS_ONLY` in production source code"
+                            , details =
+                                [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
+                                , "You should either stop using it or rename the it to not end with `TESTS_ONLY`."
+                                ]
                             , under = "listTESTS_ONLY"
                             }
                             |> Review.Test.atExactly { start = { row = 3, column = 22 }, end = { row = 3, column = 36 } }
@@ -56,17 +59,20 @@ startsWithTest =
         [ test "should report an error when using a function or value that starts with the specified suffix" <|
             \() ->
                 """module A exposing (..)
-TESTS_ONLYlist = []
-value = List.map foo TESTS_ONLYlist
+tests__list = []
+value = List.map foo tests__list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "tests__"))
                     |> Review.Test.expectErrors
                         [ Review.Test.error
-                            { message = "REPLACEME"
-                            , details = [ "REPLACEME" ]
-                            , under = "TESTS_ONLYlist"
+                            { message = "Forbidden use of test-only value `tests__list` in production source code"
+                            , details =
+                                [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
+                                , "You should either stop using it or rename the it to not start with `tests__`."
+                                ]
+                            , under = "tests__list"
                             }
-                            |> Review.Test.atExactly { start = { row = 3, column = 22 }, end = { row = 3, column = 36 } }
+                            |> Review.Test.atExactly { start = { row = 3, column = 22 }, end = { row = 3, column = 33 } }
                         ]
         , test "should not report an error when using a function or value that does not start with the specified suffix" <|
             \() ->
@@ -74,13 +80,13 @@ value = List.map foo TESTS_ONLYlist
 list = []
 value = List.map foo list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "tests__"))
                     |> Review.Test.expectNoErrors
         , test "should not report an error when using a test value inside another test value" <|
             \() ->
                 """module A exposing (..)
-TESTS_ONLYlist = []
-TESTS_ONLYvalue = List.map foo TESTS_ONLYlist
+tests__list = []
+tests__value = List.map foo tests__list
 """
                     |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "TESTS_ONLY"))
                     |> Review.Test.expectNoErrors

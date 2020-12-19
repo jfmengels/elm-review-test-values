@@ -12,6 +12,7 @@ module NoUsingTestValuesInSource exposing
 import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Expression as Expression exposing (Expression)
 import Elm.Syntax.Node as Node exposing (Node)
+import Elm.Syntax.Range exposing (Range)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
@@ -58,7 +59,7 @@ rule configuration =
     in
     Rule.newModuleRuleSchema "NoUsingTestValuesInSource" False
         |> Rule.withDeclarationEnterVisitor (declarationVisitor isTestValue)
-        |> Rule.withExpressionEnterVisitor (expressionVisitor isTestValue)
+        |> Rule.withExpressionEnterVisitor (expressionVisitor configuration isTestValue)
         |> Rule.fromModuleRuleSchema
 
 
@@ -117,18 +118,13 @@ declarationVisitor isTestValue node _ =
             ( [], False )
 
 
-expressionVisitor : (String -> Bool) -> Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor isTestValue node inDeclarationOfNonTestValue =
+expressionVisitor : Configuration -> (String -> Bool) -> Node Expression -> Context -> ( List (Error {}), Context )
+expressionVisitor configuration isTestValue node inDeclarationOfNonTestValue =
     if inDeclarationOfNonTestValue then
         case Node.value node of
             Expression.FunctionOrValue _ name ->
                 if isTestValue name then
-                    ( [ Rule.error
-                            { message = "REPLACEME"
-                            , details = [ "REPLACEME" ]
-                            }
-                            (Node.range node)
-                      ]
+                    ( [ error configuration name (Node.range node) ]
                     , inDeclarationOfNonTestValue
                     )
 
@@ -140,3 +136,24 @@ expressionVisitor isTestValue node inDeclarationOfNonTestValue =
 
     else
         ( [], inDeclarationOfNonTestValue )
+
+
+error : Configuration -> String -> Range -> Error {}
+error configuration name range =
+    let
+        ( configWord, matchText ) =
+            case configuration of
+                StartsWith str ->
+                    ( "start", str )
+
+                EndsWith str ->
+                    ( "end", str )
+    in
+    Rule.error
+        { message = "Forbidden use of test-only value `" ++ name ++ "` in production source code"
+        , details =
+            [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
+            , "You should either stop using it or rename the it to not " ++ configWord ++ " with `" ++ matchText ++ "`."
+            ]
+        }
+        range
