@@ -6,6 +6,7 @@ module NoUsingTestValuesInSource exposing (rule)
 
 -}
 
+import Elm.Syntax.Declaration as Declaration exposing (Declaration)
 import Elm.Syntax.Expression as Expression exposing (Expression)
 import Elm.Syntax.Node as Node exposing (Node)
 import Review.Rule as Rule exposing (Error, Rule)
@@ -47,31 +48,54 @@ elm-review --template jfmengels/elm-review-test-values/example --rules NoUsingTe
 -}
 rule : Rule
 rule =
-    Rule.newModuleRuleSchema "NoUsingTestValuesInSource" ()
+    Rule.newModuleRuleSchema "NoUsingTestValuesInSource" False
+        |> Rule.withDeclarationEnterVisitor declarationVisitor
         |> Rule.withExpressionEnterVisitor expressionVisitor
         |> Rule.fromModuleRuleSchema
 
 
 type alias Context =
-    ()
+    Bool
+
+
+declarationVisitor : Node Declaration -> Context -> ( List (Error {}), Context )
+declarationVisitor node _ =
+    case Node.value node of
+        Declaration.FunctionDeclaration function ->
+            let
+                functionName : String
+                functionName =
+                    function.declaration
+                        |> Node.value
+                        |> .name
+                        |> Node.value
+            in
+            ( [], not (String.endsWith "_TESTS_ONLY" functionName) )
+
+        _ ->
+            ( [], False )
 
 
 expressionVisitor : Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor node context =
-    case Node.value node of
-        Expression.FunctionOrValue _ name ->
-            if String.endsWith "_TESTS_ONLY" name then
-                ( [ Rule.error
-                        { message = "REPLACEME"
-                        , details = [ "REPLACEME" ]
-                        }
-                        (Node.range node)
-                  ]
-                , context
-                )
+expressionVisitor node inDeclarationOfNonTestValue =
+    if inDeclarationOfNonTestValue then
+        case Node.value node of
+            Expression.FunctionOrValue _ name ->
+                if String.endsWith "_TESTS_ONLY" name then
+                    ( [ Rule.error
+                            { message = "REPLACEME"
+                            , details = [ "REPLACEME" ]
+                            }
+                            (Node.range node)
+                      ]
+                    , inDeclarationOfNonTestValue
+                    )
 
-            else
-                ( [], context )
+                else
+                    ( [], inDeclarationOfNonTestValue )
 
-        _ ->
-            ( [], context )
+            _ ->
+                ( [], inDeclarationOfNonTestValue )
+
+    else
+        ( [], inDeclarationOfNonTestValue )
