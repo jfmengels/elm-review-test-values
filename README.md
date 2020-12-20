@@ -18,7 +18,7 @@ import Review.Rule exposing (Rule)
 
 config : List Rule
 config =
-    [ NoUsingTestValuesInSource.rule
+    [ NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.startsWith "tests_")
     ]
 ```
 
