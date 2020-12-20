@@ -16,10 +16,15 @@ import Elm.Syntax.Range exposing (Range)
 import Review.Rule as Rule exposing (Error, Rule)
 
 
-{-| Reports... REPLACEME
+{-| Reports when functions or values meant to be used only in tests are used in production source code.
+
+A recurring question around opaque types
 
     config =
-        [ NoUsingTestValuesInSource.rule
+        [ NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY")
+
+        -- or
+        , NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.startsWith "test_")
         ]
 
 
