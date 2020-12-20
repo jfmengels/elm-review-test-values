@@ -11,12 +11,12 @@ when inside the directory containing this file.
 
 -}
 
-import NoUsingTestValuesInSource
+import NoTestValuesInProductionCode
 import Review.Rule exposing (Rule)
 
 
 config : List Rule
 config =
-    [ NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.startsWith "tests_")
-    , NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY")
+    [ NoTestValuesInProductionCode.rule (NoTestValuesInProductionCode.startsWith "tests_")
+    , NoTestValuesInProductionCode.rule (NoTestValuesInProductionCode.endsWith "_TESTS_ONLY")
     ]

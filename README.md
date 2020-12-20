@@ -5,7 +5,7 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 
 ## Provided rules
 
-- [`NoUsingTestValuesInSource`](https://package.elm-lang.org/packages/jfmengels/elm-review-test-values/1.0.0/NoUsingTestValuesInSource) - Reports REPLACEME.
+- [`NoTestValuesInProductionCode`](https://package.elm-lang.org/packages/jfmengels/elm-review-test-values/1.0.0/NoTestValuesInProductionCode) - Reports REPLACEME.
 
 
 ## Configuration
@@ -13,12 +13,12 @@ Provides [`elm-review`](https://package.elm-lang.org/packages/jfmengels/elm-revi
 ```elm
 module ReviewConfig exposing (config)
 
-import NoUsingTestValuesInSource
+import NoTestValuesInProductionCode
 import Review.Rule exposing (Rule)
 
 config : List Rule
 config =
-    [ NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.startsWith "tests_")
+    [ NoTestValuesInProductionCode.rule (NoTestValuesInProductionCode.startsWith "tests_")
     ]
 ```
 

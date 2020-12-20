@@ -1,4 +1,4 @@
-module NoUsingTestValuesInSource exposing
+module NoTestValuesInProductionCode exposing
     ( rule
     , Configuration, endsWith, startsWith
     )
@@ -21,10 +21,10 @@ import Review.Rule as Rule exposing (Error, Rule)
 A recurring question around opaque types
 
     config =
-        [ NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.endsWith "_TESTS_ONLY")
+        [ NoTestValuesInProductionCodeTest.rule (NoTestValuesInProductionCodeTest.endsWith "_TESTS_ONLY")
 
         -- or
-        , NoUsingTestValuesInSource.rule (NoUsingTestValuesInSource.startsWith "test_")
+        , NoTestValuesInProductionCodeTest.rule (NoTestValuesInProductionCodeTest.startsWith "test_")
         ]
 
 
@@ -42,8 +42,9 @@ A recurring question around opaque types
 
 ## When (not) to enable this rule
 
-This rule is useful when REPLACEME.
-This rule is not useful when REPLACEME.
+This rule is useful only if you have instances where you wish to add guarantees to the usage of your data types, but
+need to access internals in the context of your tests.
+This rule is only useful when you have a convention in your team or project around naming conventions TODO.
 
 
 ## Try it out
@@ -51,7 +52,7 @@ This rule is not useful when REPLACEME.
 You can try this rule out by running the following command:
 
 ```bash
-elm-review --template jfmengels/elm-review-test-values/example --rules NoUsingTestValuesInSource
+elm-review --template jfmengels/elm-review-test-values/example --rules NoTestValuesInProductionCodeTest
 ```
 
 -}
@@ -62,7 +63,7 @@ rule configuration =
         isTestValue =
             buildTestValuePredicate configuration
     in
-    Rule.newModuleRuleSchema "NoUsingTestValuesInSource" False
+    Rule.newModuleRuleSchema "NoTestValuesInProductionCodeTest" False
         |> Rule.withDeclarationEnterVisitor (declarationVisitor isTestValue)
         |> Rule.withExpressionEnterVisitor (expressionVisitor configuration isTestValue)
         |> Rule.fromModuleRuleSchema

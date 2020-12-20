@@ -1,13 +1,13 @@
-module NoUsingTestValuesInSourceTest exposing (all)
+module NoTestValuesInProductionCodeTest exposing (all)
 
-import NoUsingTestValuesInSource exposing (rule)
+import NoTestValuesInProductionCode exposing (rule)
 import Review.Test
 import Test exposing (Test, describe, test)
 
 
 all : Test
 all =
-    describe "NoUsingTestValuesInSource"
+    describe "NoTestValuesInProductionCode"
         [ endsWithTest
         , startsWithTest
         ]
@@ -22,7 +22,7 @@ endsWithTest =
 listTESTS_ONLY = []
 value = List.map foo listTESTS_ONLY
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.endsWith "TESTS_ONLY"))
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = "Forbidden use of test-only value `listTESTS_ONLY` in production source code"
@@ -40,7 +40,7 @@ value = List.map foo listTESTS_ONLY
 list = []
 value = List.map foo list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.endsWith "TESTS_ONLY"))
                     |> Review.Test.expectNoErrors
         , test "should not report an error when using a test value inside another test value" <|
             \() ->
@@ -48,7 +48,7 @@ value = List.map foo list
 listTESTS_ONLY = []
 valueTESTS_ONLY = List.map foo listTESTS_ONLY
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.endsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.endsWith "TESTS_ONLY"))
                     |> Review.Test.expectNoErrors
         ]
 
@@ -62,7 +62,7 @@ startsWithTest =
 tests__list = []
 value = List.map foo tests__list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "tests__"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.startsWith "tests__"))
                     |> Review.Test.expectErrors
                         [ Review.Test.error
                             { message = "Forbidden use of test-only value `tests__list` in production source code"
@@ -80,7 +80,7 @@ value = List.map foo tests__list
 list = []
 value = List.map foo list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "tests__"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.startsWith "tests__"))
                     |> Review.Test.expectNoErrors
         , test "should not report an error when using a test value inside another test value" <|
             \() ->
@@ -88,6 +88,6 @@ value = List.map foo list
 tests__list = []
 tests__value = List.map foo tests__list
 """
-                    |> Review.Test.run (rule (NoUsingTestValuesInSource.startsWith "TESTS_ONLY"))
+                    |> Review.Test.run (rule (NoTestValuesInProductionCode.startsWith "TESTS_ONLY"))
                     |> Review.Test.expectNoErrors
         ]
