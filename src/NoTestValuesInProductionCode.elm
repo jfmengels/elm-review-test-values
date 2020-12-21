@@ -287,7 +287,7 @@ error configuration name range =
         { message = "Forbidden use of test-only value `" ++ name ++ "` in production source code"
         , details =
             [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
-            , "You should either stop using it or rename the it to not " ++ configWord ++ " with `" ++ matchText ++ "`."
+            , "You should either stop using it or rename it to not " ++ configWord ++ " with `" ++ matchText ++ "`."
             ]
         }
         range

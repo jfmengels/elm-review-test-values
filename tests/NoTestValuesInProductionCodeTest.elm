@@ -28,7 +28,7 @@ value = List.map foo listTESTS_ONLY
                             { message = "Forbidden use of test-only value `listTESTS_ONLY` in production source code"
                             , details =
                                 [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
-                                , "You should either stop using it or rename the it to not end with `TESTS_ONLY`."
+                                , "You should either stop using it or rename it to not end with `TESTS_ONLY`."
                                 ]
                             , under = "listTESTS_ONLY"
                             }
@@ -68,7 +68,7 @@ value = List.map foo tests__list
                             { message = "Forbidden use of test-only value `tests__list` in production source code"
                             , details =
                                 [ "This value was marked as being meant to only be used in test-related code, but I found it being used in code that will go to production."
-                                , "You should either stop using it or rename the it to not start with `tests__`."
+                                , "You should either stop using it or rename it to not start with `tests__`."
                                 ]
                             , under = "tests__list"
                             }
