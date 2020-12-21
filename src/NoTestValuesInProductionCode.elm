@@ -172,7 +172,7 @@ rule configuration =
         isTestValue =
             buildTestValuePredicate configuration
     in
-    Rule.newModuleRuleSchema "NoTestValuesInProductionCodeTest" False
+    Rule.newModuleRuleSchemaUsingContextCreator "NoTestValuesInProductionCodeTest" initialContext
         |> Rule.withDeclarationEnterVisitor (declarationVisitor isTestValue)
         |> Rule.withExpressionEnterVisitor (expressionVisitor configuration isTestValue)
         |> Rule.fromModuleRuleSchema
@@ -200,7 +200,20 @@ endsWith =
 
 
 type alias Context =
-    Bool
+    { inDeclarationOfNonTestValue : Bool
+    , isInSourceDirectories : Bool
+    }
+
+
+initialContext : Rule.ContextCreator () Context
+initialContext =
+    Rule.initContextCreator
+        (\metadata () ->
+            { inDeclarationOfNonTestValue = False
+            , isInSourceDirectories = Rule.isInSourceDirectories metadata
+            }
+        )
+        |> Rule.withMetadata
 
 
 
@@ -222,7 +235,7 @@ buildTestValuePredicate configuration =
 
 
 declarationVisitor : (String -> Bool) -> Node Declaration -> Context -> ( List (Error {}), Context )
-declarationVisitor isTestValue node _ =
+declarationVisitor isTestValue node context =
     case Node.value node of
         Declaration.FunctionDeclaration function ->
             let
@@ -233,30 +246,30 @@ declarationVisitor isTestValue node _ =
                         |> .name
                         |> Node.value
             in
-            ( [], not (isTestValue functionName) )
+            ( [], { context | inDeclarationOfNonTestValue = not (isTestValue functionName) } )
 
         _ ->
-            ( [], False )
+            ( [], { context | inDeclarationOfNonTestValue = False } )
 
 
 expressionVisitor : Configuration -> (String -> Bool) -> Node Expression -> Context -> ( List (Error {}), Context )
-expressionVisitor configuration isTestValue node inDeclarationOfNonTestValue =
-    if inDeclarationOfNonTestValue then
+expressionVisitor configuration isTestValue node context =
+    if context.inDeclarationOfNonTestValue && context.isInSourceDirectories then
         case Node.value node of
             Expression.FunctionOrValue _ name ->
                 if isTestValue name then
                     ( [ error configuration name (Node.range node) ]
-                    , inDeclarationOfNonTestValue
+                    , context
                     )
 
                 else
-                    ( [], inDeclarationOfNonTestValue )
+                    ( [], context )
 
             _ ->
-                ( [], inDeclarationOfNonTestValue )
+                ( [], context )
 
     else
-        ( [], inDeclarationOfNonTestValue )
+        ( [], context )
 
 
 error : Configuration -> String -> Range -> Error {}
