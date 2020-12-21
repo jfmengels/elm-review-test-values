@@ -162,7 +162,12 @@ You can try this rule out by running the following command:
 elm-review --template jfmengels/elm-review-test-values/example --rules NoTestValuesInProductionCodeTest
 ```
 
-The example this rule uses are the two configurations linked to at the top of the page.
+The example uses the following configuration:
+
+    config =
+        [ NoTestValuesInProductionCodeTest.rule
+            (NoTestValuesInProductionCodeTest.startsWith "test_")
+        ]
 
 -}
 rule : Configuration -> Rule
