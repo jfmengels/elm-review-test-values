@@ -28,81 +28,8 @@ import Review.Rule as Rule exposing (Error, Rule)
             (NoTestValuesInProductionCodeTest.endsWith "_TESTS_ONLY")
         ]
 
-A recurring question around opaque types, is how do you restrict access to constructors so that you can't misuse a data
-type, while also being able to use it in tests in order to do meaningful tests.
-
-
-## Problematic example
-
-In the following example, we have two user roles in an opaque `Role`. `Admin` is being protected so that the only way to create one is by
-having the server return that the user has that role.
-
-    -- module Role exposing (Role, requestRole)
-
-
-    import Http
-    import Json.Decode as Decode exposing (Decoder)
-
-    type Role
-        = User
-        | Admin
-
-    requestRole : (Role -> msg) -> String -> Cmd msg
-    requestRole onResponse id =
-        Http.get
-            { url = "https://server.com/user/" ++ id
-            , expect = Http.expectJson onResponse roleDecoder
-            }
-
-    roleDecoder : Decoder Role
-    roleDecoder =
-        Decode.field "role" Decode.string
-            |> Decode.andThen
-                (\role ->
-                    case role of
-                        "admin" ->
-                            Decode.succeed Admin
-
-                        "user" ->
-                            Decode.succeed User
-
-                        "admin" ->
-                            Decode.fail "Not a valid role"
-                )
-
-With this approach, we have a good foundation to build on, in the sense that it won't be possible for someone to have an
-`Admin` role without the server's consent (the approach could be improved, but for this example it is sufficient).
-
-The problem is that we know won't be able to write tests that require a role, because it is not possible to construct
-such a value in our tests, as we would need to make a HTTP request which `elm-test` doesn't support.
-
-The common solution is therefore to either expose the `Role` (exposing `Role(..)`) or to expose functions to construct
-`Role`.
-
-    -- module Role exposing (Role, admin, requestRole, user)
-    type Role
-        = User
-        | Admin
-
-    user =
-        User
-
-    admin =
-        Admin
-
-Now the problem is that we lost the foundation we had, where a user could be `Admin` only if the server said they were.
-Now such a case would only be caught during code review where the reviewer would have to make sure the role is never
-abused.
-
-
-## Proposed solution
-
-The solution I would go for in the previous example would be to expose functions to construct `Role`, but tag them in a
-way that we should only use them in test code. And using this `elm-review` rule, we'd get a guarantee that this is the
-case.
-
-Those functions are tagged as test-only by their name. You can choose to either have them prefixed or suffixed by a
-set string of your choosing.
+This rule is meant to allow you to expose values from your module that you need for writing tests, while preserving the
+making sure they are not misused in production code. You can read about the [problem and solution more in detail](https://jfmengels.net//test-only-values/).
 
 
 ## Fail
@@ -122,9 +49,9 @@ set string of your choosing.
     roleTest =
         Test.describe "Role"
             [ Test.test "admins should be able to delete database " <|
-                \() -> Expect.true (canDeleteDatabase Role.test_admin)
+                \() -> Expect.true (Role.canDeleteDatabase Role.test_admin)
             , Test.test "users should not be able to delete database " <|
-                \() -> Expect.false (canDeleteDatabase Role.test_user)
+                \() -> Expect.false (Role.canDeleteDatabase Role.user)
             ]
 
 Values marked as test-only can be used in the declaration of other test values.
@@ -134,16 +61,6 @@ Values marked as test-only can be used in the declaration of other test values.
         { id = "001"
         , role = Role.test_admin
         }
-
-
-## Critique
-
-Is this a perfect solution? No. Tagging values is a brittle solution, and it's easy to misname a function (`testadmin`
-instead of `test_admin` for instance) and lose the guarantees this rule was given you.
-
-It's not perfect, but I think this brittleness will not be a problem in practice, because even if the rule doesn't
-enforce anything, having something called `testXyz` will likely be good enough to prevent misuse in practice (otherwise
-I don't understand why there so many frameworks would prone "convention over configuration" in other ecosystems).
 
 
 ## When (not) to enable this rule
