@@ -177,7 +177,7 @@ rule configuration =
         isTestValue =
             buildTestValuePredicate configuration
     in
-    Rule.newModuleRuleSchemaUsingContextCreator "NoTestValuesInProductionCodeTest" initialContext
+    Rule.newModuleRuleSchemaUsingContextCreator "NoTestValuesInProductionCode" initialContext
         |> Rule.withDeclarationEnterVisitor (declarationVisitor isTestValue)
         |> Rule.withExpressionEnterVisitor (expressionVisitor configuration isTestValue)
         |> Rule.fromModuleRuleSchema
