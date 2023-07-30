@@ -20,12 +20,12 @@ import Review.Rule as Rule exposing (Error, Rule)
 {-| Reports when functions or values meant to be used only in tests are used in production source code.
 
     config =
-        [ NoTestValuesInProductionCodeTest.rule
-            (NoTestValuesInProductionCodeTest.startsWith "test_")
+        [ NoTestValuesInProductionCode.rule
+            (NoTestValuesInProductionCode.startsWith "test_")
 
         -- or
-        , NoTestValuesInProductionCodeTest.rule
-            (NoTestValuesInProductionCodeTest.endsWith "_TESTS_ONLY")
+        , NoTestValuesInProductionCode.rule
+            (NoTestValuesInProductionCode.endsWith "_TESTS_ONLY")
         ]
 
 This rule is meant to allow you to expose values from your module that you need for writing tests, while preserving the
@@ -34,11 +34,11 @@ making sure they are not misused in production code. You can read about the [pro
 
 ## Fail
 
-    -- NoTestValuesInProductionCodeTest.startsWith "test_"
+    -- NoTestValuesInProductionCode.startsWith "test_"
     grantAdminRights user =
         { user | role = Role.test_admin }
 
-    -- NoTestValuesInProductionCodeTest.endsWith "_TESTS_ONLY"
+    -- NoTestValuesInProductionCode.endsWith "_TESTS_ONLY"
     grantAdminRights user =
         { user | role = Role.admin_TESTS_ONLY }
 
@@ -76,14 +76,14 @@ team or project.
 You can try this rule out by running the following command:
 
 ```bash
-elm-review --template jfmengels/elm-review-test-values/example --rules NoTestValuesInProductionCodeTest
+elm-review --template jfmengels/elm-review-test-values/example --rules NoTestValuesInProductionCode
 ```
 
 The example uses the following configuration:
 
     config =
-        [ NoTestValuesInProductionCodeTest.rule
-            (NoTestValuesInProductionCodeTest.startsWith "test_")
+        [ NoTestValuesInProductionCode.rule
+            (NoTestValuesInProductionCode.startsWith "test_")
         ]
 
 -}
